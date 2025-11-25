@@ -12,6 +12,10 @@ This project implements a mini Linux shell with a real-time network packet sniff
 - Display: Packet number, Length, Source IP, Destination IP, Protocol
 - Continuous capture until Ctrl+C
 
-## How to Compile
+## How to Compile 
 ```bash
 gcc network_packet_sniffer.c -lpcap -o network_sniffer
+
+## How to Run
+sudo ./network_sniffer
+
