@@ -1,0 +1,38 @@
+ Software Requirements
+
+Operating System:
+Linux or Ubuntu (any recent version)
+Windows (with WSL – Windows Subsystem for Linux) can work too
+Compiler:
+GCC (GNU Compiler Collection)
+Libraries:
+libpcap (Packet capture library)
+Install with:
+         sudo apt update
+         sudo apt install libpcap-dev
+
+ Terminal/Shell:
+
+A terminal to run the shell interface ($ prompt)
+Ability to run sudo commands for capturing packets
+
+ Hardware Requirements
+
+Any PC or laptop with network interface (Ethernet/Wi-Fi)
+Internet connection (optional, but real packets require network activity)
+
+ Optional Tools
+
+Text editor: nano, vim, or VS Code
+Git (if pushing to GitHub)
+     Summary
+
+To run the project successfully, make sure you have:
+Linux system
+
+GCC compiler installed
+libpcap-dev installed
+Network interface active
+Then you can compile and run:
+     gcc vishal_sniffer.c -lpcap -o vishal_sniffer
+     sudo ./vishal_sniffer
