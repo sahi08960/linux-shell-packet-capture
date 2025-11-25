@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <pcap.h>
+#include <arpa/inet.h>
+#include <netinet/ip.h>
+
+int packet_count = 0;
+
+// Callback function for each captured packet
+void packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) {
+    packet_count++;
+
+    const struct ip *ip_header = (struct ip*)(packet + 14); // Skip Ethernet header
+    char src_ip[INET_ADDRSTRLEN];
+    char dst_ip[INET_ADDRSTRLEN];
+
+    inet_ntop(AF_INET, &(ip_header->ip_src), src_ip, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &(ip_header->ip_dst), dst_ip, INET_ADDRSTRLEN);
+
+    printf("\n------------------------------------\n");
+    printf("Packet #%d\n", packet_count);
+    printf("Packet Length   : %d bytes\n", header->len);
+    printf("Source IP       : %s\n", src_ip);
+    printf("Destination IP  : %s\n", dst_ip);
+
+    // Show protocol name
+    printf("Protocol        : ");
+    switch(ip_header->ip_p) {
+        case IPPROTO_TCP:  printf("TCP\n"); break;
+        case IPPROTO_UDP:  printf("UDP\n"); break;
+        case IPPROTO_ICMP: printf("ICMP\n"); break;
+        default:           printf("Other\n"); break;
+    }
+    printf("------------------------------------\n");
+}
+
+// Function to start real packet capture
+void start_real_packet_sniffer() {
+    pcap_if_t *alldevs;
+    pcap_if_t *device;
+    char errbuf[PCAP_ERRBUF_SIZE];
+
+    // Get list of devices
+    if (pcap_findalldevs(&alldevs, errbuf) == -1) {
+        printf("Error finding devices: %s\n", errbuf);
+        return;
+    }
+
+    if (alldevs == NULL) {   printf("No devices found.\n");
+        return;
+    }
+
+    // Pick the first device
+    device = alldevs;
+    printf("Using device: %s\n", device->name);
+
+    // Open device for sniffing
+    pcap_t *handle = pcap_open_live(device->name, 65536, 1, 0, errbuf);
+    if (handle == NULL) {
+        printf("Could not open device %s: %s\n", device->name, errbuf);
+        pcap_freealldevs(alldevs);
+        return;
+    }
+
+    printf("\nReal Packet Sniffer Started! Press Ctrl+C to stop.\n");
+    pcap_loop(handle, -1, packet_handler, NULL);
+
+    pcap_close(handle);
+    pcap_freealldevs(alldevs);
+}
+
+// Menu display function
+void show_menu() {
+    printf("\n===== MINI LINUX SHELL MENU =====\n");
+    printf("1. Capture REAL Network Packets\n");
+    printf("2. Exit\n");
+    printf("Enter your choice: ");
+}
+
+int main() {
+    char command[50];
+
+    while (1) {
+        printf("\n$ ");
+        scanf("%s", command);
+
+        int choice;
+        show_menu();
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            start_real_packet_sniffer();
+        }
+        else if (choice == 2) {
+            printf("Exiting...\n");   
+            exit(0);
+        }
+        else {
+            printf("Invalid choice.\n");
+        }
+
+        // Shell commands
+        if (strcmp(command, "ls") == 0) {
+            system("ls");
+        }
+        else if (strcmp(command, "pwd") == 0) {
+            system("pwd");
+        }
+        else if (strcmp(command, "mkdir") == 0) {
+            char folder[50];
+            scanf("%s", folder);
+            char cmd[100];
+            sprintf(cmd, "mkdir %s", folder);
+            system(cmd);
+        }
+        else if (strcmp(command, "cp") == 0) {
+            char src[50], dest[50];
+            scanf("%s %s", src, dest);
+            char cmd[200];
+            sprintf(cmd, "cp %s %s", src, dest);
+            system(cmd);
+        }
+    }
+
+    return 0;
+}
